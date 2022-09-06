@@ -1,0 +1,4 @@
+Das ist eine Textdatei.
+Sie wird auch ASCII-Datei genannt.
+Der in ihr enthaltene Text hat keine
+Formatierung.
