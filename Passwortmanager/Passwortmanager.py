@@ -31,7 +31,7 @@ class Passwort():
     def __str__(self):
         sep = ";"
         return (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
-    def printData(self):
+    def print_data(self):
         sep = "\t"
         print (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
 
@@ -82,4 +82,4 @@ pw_liste = []
 Datei_Lesen(pw_liste)
 
 for i in pw_liste:
-    print(i)
+    i.print_Data()
