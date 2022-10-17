@@ -1,6 +1,13 @@
 # Passwortmanager für WPF Python Montag Lorenz Hankel FA-B-01
 
 # Passwort Klasse definieren
+from ast import Pass
+import base64
+import os
+from pathlib import Path
+from socket import inet_ntoa
+
+
 class Passwort():
     def __init__(self, index:int , name:str, passwort:str, url:str, hinweis:str):
         self.index = index
@@ -29,11 +36,55 @@ class Passwort():
     def get_hinweis(self):
         return self.hinweis
     def __str__(self):
-        sep = ";"
+        sep = ":"
         return (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
     def print_data(self):
         sep = "\t"
         print (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
+
+def master_Passwort_anlegen():
+    # Neues Passwort vom Nutzer abfragen
+    __pw = bytes(input("Bitte geben Sie das neue Master-Passwort an. Vergessen Sie es nicht!\n"), "utf-8")
+    __pw_enc = base64.b64encode(__pw)
+    # nun das verschlüsselte Passwort in Datei schreiben.
+    datei = open("./Passwortmanager/login.txt", "w")
+    datei.write((__pw_enc).decode("utf-8"))
+    datei.close()
+
+def ersteinrichtung(pw_liste):
+    print("\nErsteinrichtung starten... \n")
+    # Neues Master Passwort anlegen
+    master_Passwort_anlegen()
+    # Passwort Liste mit Test-Daten füllen
+    Teste_Liste_erstellen()
+    # Passwort Datei schreiben mit den angelegten Test-Daten
+    Datei_Schreiben(pw_liste)
+    Datei_Lesen(pw_liste)
+    print("\nErsteinrichtung beendet. \n")
+
+def master_Passwort_pruefen():
+    datei = open("./Passwortmanager/login.txt", "r")
+    __login = bytes(datei.read(), "utf-8")
+    __pw = bytes(input("\nBitte geben Sie Ihr Master Passwort ein.\n"), "utf-8")
+    if base64.b64decode(__login)!= __pw:
+        print("Passwort ist falsch")
+        exit()
+    else :
+        print("Zugangsdaten sind korrekt.")
+
+def einrichtung_pruefen():
+    __master_datei = Path("./Passwortmanager/login.txt")
+    __passwort_datei = Path("./Passwortmanager/passwords.txt")
+    if __master_datei.is_file() == False and __passwort_datei.is_file() == False:
+        ersteinrichtung(pw_liste)
+    elif __master_datei.is_file() and __passwort_datei.is_file() == False:
+        print("\nMaster Login Datei fehlt. Setze Installation zurück.\n")
+        os.remove("./Passwortmanager/login.txt")
+        ersteinrichtung(pw_liste)
+    else :
+        print("\nSystem in Ordnung.\n")
+        master_Passwort_pruefen()
+        Datei_Lesen(pw_liste)
 
 def Datei_Lesen(pw_liste):
     datei = open("./Passwortmanager/passwords.txt", "r")
@@ -43,9 +94,9 @@ def Datei_Lesen(pw_liste):
     for line in Lines:
         count += 1
         pw_attribute = []
-        pw_attribute = line.split(";")
-        for i in pw_attribute:
-            print(i)
+        pw_attribute = line.split(":")
+        #for i in pw_attribute:
+          #  print(i)
         pw = Passwort(pw_attribute[0], pw_attribute[1], pw_attribute[2], pw_attribute[3], pw_attribute[4])
         pw_liste.append(pw)
     datei.close
@@ -59,28 +110,83 @@ def Datei_Schreiben(pw_liste):
 
 # Testet das Erstellen und füllen der Passwort Liste
 def Teste_Liste_erstellen():
-    for i in range(1,10):
+    for i in range(1,3):
         ein_Passwort = Passwort(i, "EinPasswortName", "Das Passwort", "Die URL", "Ein Hinweis")
-       # print(ein_Passwort)
         pw_liste.append(str(ein_Passwort) + "\n")
 
+def Ausgabe_Pw_Liste(pw_liste):
+    print("-------------------------------------------------------------------------------------")
+    print("Index\tName\t\t\tPasswort\t\tURL\t\tHinweis")
+    print("-------------------------------------------------------------------------------------")
+    for i in pw_liste:
+        index = Passwort.get_index(i)
+        name = Passwort.get_name(i)
+        passwort = Passwort.get_passwort(i)
+        url = Passwort.get_url(i)
+        hinweis = Passwort.get_hinweis(i)
+        print(index + "\t" + name + "\t\t" + passwort + "\t\t" + url + "\t\t" + hinweis)
+
+def finde_naechsten_index():
+    # liste mit allen Indezes anlegen
+    index_list = []
+    for i in pw_liste:
+        index_list.append(Passwort.get_index(i))
+    # Liste sortieren um Maximum zu finden
+    index_list.sort()
+    next_index:int = int(index_list[-1]) + 1
+    return next_index
+
+
+def neuen_Datensatz_anlegen():
+    index:int = finde_naechsten_index()
+    name:str = str(input("Geben Sie Ihren Accountnamen für den neuen Datensatz ein.\n"))
+    passwort:str = str(input("Geben Sie Ihr Passwort für den neuen Datensatz ein.\n"))
+    url:str = str(input("Geben Sie die URL für den neuen Datensatz ein.\n"))
+    hinweis:str = str(input("(optional) Geben Sie einen Hinweis für den neuen Datensatz ein.\n"))
+    if hinweis == "":
+        hinweis = " "
+    ein_Passwort = Passwort(index, name, passwort, url, hinweis)
+    pw_liste.append(str(ein_Passwort) + "\n")
+    Datei_Schreiben(pw_liste)
+    Datei_Lesen(pw_liste)
+
+def auswahl_Menue(pw_liste):
+    print("1) Zeige existierende Passwörter")
+    print("2) Füge ein neues Passwort hinzu")
+    print("3) Lösche ein Passwort")
+    print("4) Aktualisiere Passwort")
+    print("5) Beende\n")
+    auswahl:int = 0
+    while auswahl < 1 or auswahl > 5:
+        auswahl:int = int(input())
+    match auswahl:
+        # Liste ausgeben
+        case 1:
+            Ausgabe_Pw_Liste(pw_liste)
+        # Neuen Datensatz anlegen
+        case 2:
+            neuen_Datensatz_anlegen()
+        # Lösche einen Datensatz
+        case 3:
+            #TODO: Löschen eines DS
+            pass
+        # Ändere einen Datensatz
+        case 4:
+            #TODO: Ändern eines DS
+            pass
+        # Beenden
+        case 5:
+            exit()
 
 # Oben Methoden / Funktionen
 # --------------------------------------------------------------------------------------
 # Unten Logik / Ablauf Planung
 
-
 # Liste für Passwörter definieren
 pw_liste = []
-
-#Teste_Liste_erstellen()
-#Datei_Schreiben(pw_liste)
-
-# Einlesen der vorhanden Passwörter in Pw_liste
-#Teste_Liste_erstellen()
-#Datei_Schreiben(pw_liste)
-Datei_Lesen(pw_liste)
-
-for i in pw_liste:
-    pw = Passwort(i)
-    pw.print_data()
+# Prüfen der Umgebung
+einrichtung_pruefen()
+# Ausgabe der formatierten Daten aus der Passwort Datei.
+Ausgabe_Pw_Liste(pw_liste)
+while True:
+    auswahl_Menue(pw_liste)
