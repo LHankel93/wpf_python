@@ -36,7 +36,7 @@ class Passwort():
         print (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
 
 def Datei_Lesen(pw_liste):
-    datei = open("passwords.txt", "r")
+    datei = open("./Passwortmanager/passwords.txt", "r")
     count = 0
     Lines = datei.readlines()
     # Strips the newline character
@@ -52,7 +52,7 @@ def Datei_Lesen(pw_liste):
 
 # Schreiben einer Passwort Datei
 def Datei_Schreiben(pw_liste):
-    datei = open("passwords.txt", "w")
+    datei = open("./Passwortmanager/passwords.txt", "w")
     for x in pw_liste:
         datei.write(str(x))
     datei.close
@@ -77,8 +77,8 @@ pw_liste = []
 #Datei_Schreiben(pw_liste)
 
 # Einlesen der vorhanden Passwörter in Pw_liste
-Teste_Liste_erstellen()
-Datei_Schreiben(pw_liste)
+#Teste_Liste_erstellen()
+#Datei_Schreiben(pw_liste)
 Datei_Lesen(pw_liste)
 
 for i in pw_liste:
