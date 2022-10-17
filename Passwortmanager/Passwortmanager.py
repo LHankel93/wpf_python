@@ -82,4 +82,5 @@ pw_liste = []
 Datei_Lesen(pw_liste)
 
 for i in pw_liste:
-    i.print_Data()
+    pw = Passwort(i)
+    pw.print_data()
