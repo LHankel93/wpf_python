@@ -100,7 +100,7 @@ def datensatz_loeschen(pw_liste, index_loeschen:int):
         del(pw_liste[listen_index])
         Datei_Schreiben(pw_liste)
         Datei_Lesen(pw_liste)
-        print("Es wurden " + (int(len(pw_liste)) - int(len(vgl_liste))) + " Elemente aus der Datenbank gelöscht.")
+        print("Es wurden " + str((int(len(pw_liste)) - int(len(vgl_liste)))) + " Elemente aus der Datenbank gelöscht.")
     else:
         print("Kein entsprechendes Element in der Datenbank gefunden")
 
