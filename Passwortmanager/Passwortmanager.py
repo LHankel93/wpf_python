@@ -93,7 +93,7 @@ def datensatz_loeschen(pw_liste, index_loeschen:int):
     listen_index:int = -1
     count:int = 0
     for i in pw_liste:
-        print(str("Aktueller Index zum Vergleich: " + Passwort.get_index(i)) + "\n")
+        # print(str("\nAktueller Index zum Vergleich: " + Passwort.get_index(i)) + "\n")
         if int(Passwort.get_index(i)) == int(index_loeschen):
             print("\nFolgender DS wird gelöscht: " + str(index_loeschen) + "\n")
             listen_index = count
@@ -108,6 +108,27 @@ def datensatz_loeschen(pw_liste, index_loeschen:int):
     else:
         print("Kein entsprechendes Element in der Datenbank gefunden")
 
+def datensatz_aendern(pw_liste, index_aendern:int):
+    print("\nDS mit folgenden Index werden gesucht: " + str(index_aendern) + "\n")
+    for i in pw_liste:
+        if int(Passwort.get_index(i)) == int(index_aendern):
+            neu_name = str(input("\nGeben Sie den neuen Namen ein, falls Sie ihn ändern wollen.\n"))
+            if neu_name != "":
+                Passwort.set_name(i,neu_name)
+            neu_passwort = str(input("\nGeben Sie das neue Passwort ein, falls Sie es ändern wollen.\n"))
+            if neu_passwort != "":
+                Passwort.set_passwort(i,neu_passwort)
+            neu_url = str(input("\nGeben Sie neue URL ein, falls Sie sie ändern wollen.\n"))
+            if neu_url != "":
+                Passwort.set_url(i,neu_url)
+            neu_hinweis = str(input("\nGeben Sie die neuen Hinweise ein, falls Sie ihn ändern wollen\n"))
+            if neu_hinweis != "":
+                Passwort.set_hinweis(i,neu_hinweis)
+            break
+    Datei_Schreiben(pw_liste)
+    Datei_Lesen(pw_liste)
+        
+
 def Datei_Lesen(pw_liste):
     datei = open("./Passwortmanager/passwords.txt", "r")
     count = 0
@@ -117,8 +138,6 @@ def Datei_Lesen(pw_liste):
         count += 1
         pw_attribute = []
         pw_attribute = line.split(":")
-        #for i in pw_attribute:
-          #  print(i)
         pw = Passwort(pw_attribute[0], pw_attribute[1], pw_attribute[2], pw_attribute[3], pw_attribute[4])
         pw_liste.append(pw)
     datei.close
@@ -173,7 +192,7 @@ def neuen_Datensatz_anlegen():
     Datei_Lesen(pw_liste)
 
 def auswahl_Menue(pw_liste):
-    print("1) Zeige existierende Passwörter")
+    print("\n1) Zeige existierende Passwörter")
     print("2) Füge ein neues Passwort hinzu")
     print("3) Lösche ein Passwort")
     print("4) Aktualisiere Passwort")
@@ -190,11 +209,11 @@ def auswahl_Menue(pw_liste):
             neuen_Datensatz_anlegen()
         # Lösche einen Datensatz
         case 3:
-            #TODO: Löschen eines DS
             datensatz_loeschen(pw_liste, int(input("\nBitte geben Sie den Index des zu löschenden Passwortes ein.\n")))
         # Ändere einen Datensatz
         case 4:
             #TODO: Ändern eines DS
+            datensatz_aendern(pw_liste, int(input("\nBitte geben Sie den Index des zu ändernden Passwortes ein.\n")))
             pass
         # Beenden
         case 5:
