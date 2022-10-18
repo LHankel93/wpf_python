@@ -4,6 +4,7 @@
 from ast import Pass
 from copy import deepcopy
 import base64
+from operator import index
 import os
 from pathlib import Path
 
@@ -87,9 +88,21 @@ def einrichtung_pruefen():
         Datei_Lesen(pw_liste)
 
 def datensatz_loeschen(pw_liste, index_loeschen:int):
-    vgl_liste = deepcopy(pw_liste)
-    
-    pass
+    vgl_liste = deepcopy(pw_liste) # zum Vergleichen später
+    listen_index:int = 0
+    count:int = -1
+    for i in pw_liste:
+        if Passwort.get_index == index_loeschen:
+            listen_index = count + 1
+        else: 
+            count +=1
+    if listen_index != -1:
+        del(pw_liste[listen_index])
+        Datei_Schreiben(pw_liste)
+        Datei_Lesen(pw_liste)
+        print("Es wurden " + (int(len(pw_liste)) - int(len(vgl_liste))) + " Elemente aus der Datenbank gelöscht.")
+    else:
+        print("Kein entsprechendes Element in der Datenbank gefunden")
 
 def Datei_Lesen(pw_liste):
     datei = open("./Passwortmanager/passwords.txt", "r")
@@ -174,7 +187,7 @@ def auswahl_Menue(pw_liste):
         # Lösche einen Datensatz
         case 3:
             #TODO: Löschen eines DS
-            pass
+            datensatz_loeschen(pw_liste, int(input("\nBitte geben Sie den Index des zu löschenden Passwortes ein.\n")))
         # Ändere einen Datensatz
         case 4:
             #TODO: Ändern eines DS
