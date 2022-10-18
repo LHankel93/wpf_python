@@ -88,19 +88,23 @@ def einrichtung_pruefen():
         Datei_Lesen(pw_liste)
 
 def datensatz_loeschen(pw_liste, index_loeschen:int):
+    print("\nDS mit folgenden Index werden gesucht: " + str(index_loeschen) + "\n")
     vgl_liste = deepcopy(pw_liste) # zum Vergleichen später
-    listen_index:int = 0
-    count:int = -1
+    listen_index:int = -1
+    count:int = 0
     for i in pw_liste:
-        if Passwort.get_index == index_loeschen:
-            listen_index = count + 1
+        print(str("Aktueller Index zum Vergleich: " + Passwort.get_index(i)) + "\n")
+        if int(Passwort.get_index(i)) == int(index_loeschen):
+            print("\nFolgender DS wird gelöscht: " + str(index_loeschen) + "\n")
+            listen_index = count
+            break
         else: 
             count +=1
     if listen_index != -1:
         del(pw_liste[listen_index])
         Datei_Schreiben(pw_liste)
         Datei_Lesen(pw_liste)
-        print("Es wurden " + str((int(len(pw_liste)) - int(len(vgl_liste)))) + " Elemente aus der Datenbank gelöscht.")
+        print("Es wurden " + str((int(len(vgl_liste)) - int(len(pw_liste)))) + " Elemente aus der Datenbank gelöscht.")
     else:
         print("Kein entsprechendes Element in der Datenbank gefunden")
 
