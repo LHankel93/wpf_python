@@ -2,10 +2,10 @@
 
 # Passwort Klasse definieren
 from ast import Pass
+from copy import deepcopy
 import base64
 import os
 from pathlib import Path
-from socket import inet_ntoa
 
 
 class Passwort():
@@ -85,6 +85,11 @@ def einrichtung_pruefen():
         print("\nSystem in Ordnung.\n")
         master_Passwort_pruefen()
         Datei_Lesen(pw_liste)
+
+def datensatz_loeschen(pw_liste, index_loeschen:int):
+    vgl_liste = deepcopy(pw_liste)
+    
+    pass
 
 def Datei_Lesen(pw_liste):
     datei = open("./Passwortmanager/passwords.txt", "r")
