@@ -157,7 +157,7 @@ def Teste_Liste_erstellen():
 
 def Ausgabe_Pw_Liste(pw_liste):
     print("-------------------------------------------------------------------------------------")
-    print("Index\tName\t\t\tPasswort\t\tURL\t\tHinweis")
+    print("Index\tName\t\tPasswort\t\tURL\t\tHinweis")
     print("-------------------------------------------------------------------------------------")
     for i in pw_liste:
         index = Passwort.get_index(i)
