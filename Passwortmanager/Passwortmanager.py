@@ -1,14 +1,12 @@
 # Passwortmanager für WPF Python Montag Lorenz Hankel FA-B-01
 
-# Passwort Klasse definieren
-from ast import Pass
+
 from copy import deepcopy
 import base64
-from operator import index
+from email.policy import default
 import os
 from pathlib import Path
-
-
+# Passwort Klasse definieren
 class Passwort():
     def __init__(self, index:int , name:str, passwort:str, url:str, hinweis:str):
         self.index = index
@@ -38,10 +36,8 @@ class Passwort():
         return self.hinweis
     def __str__(self):
         sep = ":"
-        return (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
-    def print_data(self):
-        sep = "\t"
-        print (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
+        #return (f"{str(self.index) + sep + str(self.name) + sep + str(self.passwort) + sep + str(self.url) + sep + str(self.hinweis)}")
+        return (str(self.index) + ":" + str(self.name) + ":" + str(self.passwort) + ":" + str(self.url) + ":" + str(self.hinweis))
 
 def master_Passwort_anlegen():
     # Neues Passwort vom Nutzer abfragen
@@ -131,29 +127,31 @@ def datensatz_aendern(pw_liste, index_aendern:int):
 
 def Datei_Lesen(pw_liste):
     datei = open("./Passwortmanager/passwords.txt", "r")
-    count = 0
     Lines = datei.readlines()
-    # Strips the newline character
+    pw_attribute = []
+    pw_liste.clear() # die alte Liste leeren um Sie auf die Neu-Befüllung vorzubereiten.    
     for line in Lines:
-        count += 1
-        pw_attribute = []
-        pw_attribute = line.split(":")
-        pw = Passwort(pw_attribute[0], pw_attribute[1], pw_attribute[2], pw_attribute[3], pw_attribute[4])
-        pw_liste.append(pw)
+        # Abfangen von Leerzeilen (Code verhielt sich unberechenbar)
+        if len(line.strip()) != 0:
+            pw_attribute.clear()
+            pw_attribute = line.split(":")
+            pw = Passwort(pw_attribute[0], pw_attribute[1], pw_attribute[2], pw_attribute[3], pw_attribute[4])
+            pw_liste.append(pw)
     datei.close
 
 # Schreiben einer Passwort Datei
 def Datei_Schreiben(pw_liste):
     datei = open("./Passwortmanager/passwords.txt", "w")
+    anzahl:int = len(pw_liste)
     for x in pw_liste:
-        datei.write(str(x))
+        datei.write(str(x) + "\n")
     datei.close
 
 # Testet das Erstellen und füllen der Passwort Liste
 def Teste_Liste_erstellen():
     for i in range(1,3):
-        ein_Passwort = Passwort(i, "EinPasswortName", "Das Passwort", "Die URL", "Ein Hinweis")
-        pw_liste.append(str(ein_Passwort) + "\n")
+        ein_Passwort = Passwort(i, "EinPasswortName" + str(i), "Das Passwort" + str(i), "Die URL" + str(i), "Ein Hinweis" + str(i))
+        pw_liste.append(ein_Passwort)
 
 def Ausgabe_Pw_Liste(pw_liste):
     print("-------------------------------------------------------------------------------------")
@@ -165,7 +163,7 @@ def Ausgabe_Pw_Liste(pw_liste):
         passwort = Passwort.get_passwort(i)
         url = Passwort.get_url(i)
         hinweis = Passwort.get_hinweis(i)
-        print(index + "\t" + name + "\t\t" + passwort + "\t\t" + url + "\t\t" + hinweis)
+        print(str(index) + "\t" + str(name) + "\t\t" + str(passwort) + "\t\t" + str(url) + "\t\t" + str(hinweis))
 
 def finde_naechsten_index():
     # liste mit allen Indezes anlegen
@@ -174,20 +172,23 @@ def finde_naechsten_index():
         index_list.append(Passwort.get_index(i))
     # Liste sortieren um Maximum zu finden
     index_list.sort()
-    next_index:int = int(index_list[-1]) + 1
+    if not index_list:
+        next_index = 1
+    else:
+        next_index:int = int(index_list[-1]) + 1
     return next_index
 
 
-def neuen_Datensatz_anlegen():
+def neuen_Datensatz_anlegen(pw_liste):
     index:int = finde_naechsten_index()
     name:str = str(input("Geben Sie Ihren Accountnamen für den neuen Datensatz ein.\n"))
     passwort:str = str(input("Geben Sie Ihr Passwort für den neuen Datensatz ein.\n"))
     url:str = str(input("Geben Sie die URL für den neuen Datensatz ein.\n"))
     hinweis:str = str(input("(optional) Geben Sie einen Hinweis für den neuen Datensatz ein.\n"))
     if hinweis == "":
-        hinweis = " "
+        hinweis = "/"
     ein_Passwort = Passwort(index, name, passwort, url, hinweis)
-    pw_liste.append(str(ein_Passwort) + "\n")
+    pw_liste.append(ein_Passwort)
     Datei_Schreiben(pw_liste)
     Datei_Lesen(pw_liste)
 
@@ -200,13 +201,15 @@ def auswahl_Menue(pw_liste):
     auswahl:int = 0
     while auswahl < 1 or auswahl > 5:
         auswahl:int = int(input())
+        if auswahl < 1 or auswahl > 5 and auswahl not in [1, 2, 3, 4, 5]:
+            print("Keine zulässige Eingabe!\nBitte eine Zahl zwischen 1 und 5 eingeben.")
     match auswahl:
         # Liste ausgeben
         case 1:
             Ausgabe_Pw_Liste(pw_liste)
         # Neuen Datensatz anlegen
         case 2:
-            neuen_Datensatz_anlegen()
+            neuen_Datensatz_anlegen(pw_liste)
         # Lösche einen Datensatz
         case 3:
             datensatz_loeschen(pw_liste, int(input("\nBitte geben Sie den Index des zu löschenden Passwortes ein.\n")))
@@ -214,13 +217,14 @@ def auswahl_Menue(pw_liste):
         case 4:
             #TODO: Ändern eines DS
             datensatz_aendern(pw_liste, int(input("\nBitte geben Sie den Index des zu ändernden Passwortes ein.\n")))
-            pass
         # Beenden
         case 5:
             exit()
+        
+        
 
 # Oben Methoden / Funktionen
-# --------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------
 # Unten Logik / Ablauf Planung
 
 # Liste für Passwörter definieren
@@ -229,5 +233,6 @@ pw_liste = []
 einrichtung_pruefen()
 # Ausgabe der formatierten Daten aus der Passwort Datei.
 Ausgabe_Pw_Liste(pw_liste)
+# Hauptschleife
 while True:
     auswahl_Menue(pw_liste)
