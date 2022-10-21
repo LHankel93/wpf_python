@@ -6,6 +6,7 @@ import base64
 from email.policy import default
 import os
 from pathlib import Path
+import sys
 # Passwort Klasse definieren
 class Passwort():
     def __init__(self, index:int , name:str, passwort:str, url:str, hinweis:str):
@@ -50,12 +51,14 @@ def master_Passwort_anlegen():
 
 def ersteinrichtung(pw_liste):
     print("\nErsteinrichtung starten... \n")
+    # Dateiname abfragen
+    
     # Neues Master Passwort anlegen
     master_Passwort_anlegen()
     # Passwort Liste mit Test-Daten füllen
     Teste_Liste_erstellen()
     # Passwort Datei schreiben mit den angelegten Test-Daten
-    Datei_Schreiben(pw_liste)
+    Datei_Schreiben(pw_liste, datenbank_datei)
     Datei_Lesen(pw_liste)
     print("\nErsteinrichtung beendet. \n")
 
@@ -98,7 +101,7 @@ def datensatz_loeschen(pw_liste, index_loeschen:int):
             count +=1
     if listen_index != -1:
         del(pw_liste[listen_index])
-        Datei_Schreiben(pw_liste)
+        Datei_Schreiben(pw_liste, datenbank_datei)
         Datei_Lesen(pw_liste)
         print("Es wurden " + str((int(len(vgl_liste)) - int(len(pw_liste)))) + " Elemente aus der Datenbank gelöscht.")
     else:
@@ -121,7 +124,7 @@ def datensatz_aendern(pw_liste, index_aendern:int):
             if neu_hinweis != "":
                 Passwort.set_hinweis(i,neu_hinweis)
             break
-    Datei_Schreiben(pw_liste)
+    Datei_Schreiben(pw_liste, datenbank_datei)
     Datei_Lesen(pw_liste)
         
 
@@ -140,8 +143,8 @@ def Datei_Lesen(pw_liste):
     datei.close
 
 # Schreiben einer Passwort Datei
-def Datei_Schreiben(pw_liste):
-    datei = open("./Passwortmanager/passwords.txt", "w")
+def Datei_Schreiben(pw_liste, datenbank_datei:str):
+    datei = open("./Passwortmanager/" + datenbank_datei, "w")
     anzahl:int = len(pw_liste)
     for x in pw_liste:
         datei.write(str(x) + "\n")
@@ -215,14 +218,46 @@ def auswahl_Menue(pw_liste):
             datensatz_loeschen(pw_liste, int(input("\nBitte geben Sie den Index des zu löschenden Passwortes ein.\n")))
         # Ändere einen Datensatz
         case 4:
-            #TODO: Ändern eines DS
             datensatz_aendern(pw_liste, int(input("\nBitte geben Sie den Index des zu ändernden Passwortes ein.\n")))
         # Beenden
         case 5:
-            exit()
+            sys.exit()
         
         
 # TODO: Hier noch Startnachricht mit Auswahl implementieren!
+def startbildschirm():
+    print("=====================")
+    print("   Passwortmanager")
+    print("=====================")
+    # Darstellen der Optionen
+    print("\n1) Neue Passwort-Datenbank erstellen\n2) Vorhandene Datenbank nutzen\n3) Abbrechen")
+    # Auswahl der Optionen
+    auswahl:int = int(input("\nWählen Sie eine der Optionen aus\n"))
+    match auswahl:
+        case 1:
+            print("Neue Datenbank wird angelegt.\nFalls vorhanden, wird die alte Datenbank gelöscht.")
+            ersteinrichtung(pw_liste)
+        case 2:
+            print("Vorhandene Datenbank wird genutzt.")
+            einrichtung_pruefen()
+        case 3:
+            print("Programm wird beendet.")
+            sys.exit()
+
+def einstellungen_laden(settings_datei:str):
+    datei = open(settings_datei, 'r')
+    Lines = datei.readlines()
+    einstellungen = {}
+    # Datei mit Einstellungen iterieren um Einstellungs-Variablen zu füllen
+    for line in Lines:
+        if len(line.strip()) != 0:
+            einstellungen = dict(line.split(":"))
+            for k, v in einstellungen.items():
+                print(k,v)
+            if einstellungen[0] == "datenbank_datei":
+                
+                return settings
+                
 
 # Oben Methoden / Funktionen
 # ------------------------------------------------------------------------------------------------------------------------
@@ -230,8 +265,12 @@ def auswahl_Menue(pw_liste):
 
 # Liste für Passwörter definieren
 pw_liste = []
-# Prüfen der Umgebung
-einrichtung_pruefen()
+# Einstellungen
+settings_datei = "./Passwortmanager/settings.cfg"
+settings = {}
+settings = einstellungen_laden(settings_datei)
+# Startbildschirm zeigen
+startbildschirm()
 # Ausgabe der formatierten Daten aus der Passwort Datei.
 Ausgabe_Pw_Liste(pw_liste)
 # Hauptschleife
