@@ -3,7 +3,6 @@
 
 from copy import deepcopy
 import base64
-from email.policy import default
 import os
 from pathlib import Path
 import sys
@@ -49,17 +48,20 @@ def master_Passwort_anlegen():
     datei.write((__pw_enc).decode("utf-8"))
     datei.close()
 
-def ersteinrichtung(pw_liste):
+def ersteinrichtung(pw_liste, einstellungen):
     print("\nErsteinrichtung starten... \n")
     # Dateiname abfragen
-    
+    datenbank_datei_name:str = input("Bitte geben Sie den neuen Namen der Passwort-Datenbank an.\n")
+    print(str("Neue Datenbank Dateiname: "+ datenbank_datei_name))
+    Einstellungen_Datei_Speichern(datenbank_datei_name)
+    print(einstellungen)
     # Neues Master Passwort anlegen
     master_Passwort_anlegen()
     # Passwort Liste mit Test-Daten füllen
     Teste_Liste_erstellen()
     # Passwort Datei schreiben mit den angelegten Test-Daten
-    Datei_Schreiben(pw_liste, datenbank_datei)
-    Datei_Lesen(pw_liste)
+    Passwort_Datei_Schreiben(pw_liste, datenbank_datei_name)
+    Datei_Lesen(pw_liste, )
     print("\nErsteinrichtung beendet. \n")
 
 def master_Passwort_pruefen():
@@ -86,7 +88,7 @@ def einrichtung_pruefen():
         master_Passwort_pruefen()
         Datei_Lesen(pw_liste)
 
-def datensatz_loeschen(pw_liste, index_loeschen:int):
+def datensatz_loeschen(pw_liste, index_loeschen:int, datenbank_datei):
     print("\nDS mit folgenden Index werden gesucht: " + str(index_loeschen) + "\n")
     vgl_liste = deepcopy(pw_liste) # zum Vergleichen später
     listen_index:int = -1
@@ -101,13 +103,13 @@ def datensatz_loeschen(pw_liste, index_loeschen:int):
             count +=1
     if listen_index != -1:
         del(pw_liste[listen_index])
-        Datei_Schreiben(pw_liste, datenbank_datei)
+        Passwort_Datei_Schreiben(pw_liste, datenbank_datei)
         Datei_Lesen(pw_liste)
         print("Es wurden " + str((int(len(vgl_liste)) - int(len(pw_liste)))) + " Elemente aus der Datenbank gelöscht.")
     else:
         print("Kein entsprechendes Element in der Datenbank gefunden")
 
-def datensatz_aendern(pw_liste, index_aendern:int):
+def datensatz_aendern(pw_liste, index_aendern:int, datenbank_datei):
     print("\nDS mit folgenden Index werden gesucht: " + str(index_aendern) + "\n")
     for i in pw_liste:
         if int(Passwort.get_index(i)) == int(index_aendern):
@@ -124,7 +126,7 @@ def datensatz_aendern(pw_liste, index_aendern:int):
             if neu_hinweis != "":
                 Passwort.set_hinweis(i,neu_hinweis)
             break
-    Datei_Schreiben(pw_liste, datenbank_datei)
+    Passwort_Datei_Schreiben(pw_liste, datenbank_datei)
     Datei_Lesen(pw_liste)
         
 
@@ -143,12 +145,22 @@ def Datei_Lesen(pw_liste):
     datei.close
 
 # Schreiben einer Passwort Datei
-def Datei_Schreiben(pw_liste, datenbank_datei:str):
-    datei = open("./Passwortmanager/" + datenbank_datei, "w")
-    anzahl:int = len(pw_liste)
+def Passwort_Datei_Schreiben(pw_liste, datenbank_datei_name:str):
+    pfad:str = str("./Passwortmanager/" + datenbank_datei_name)
+    datei = open(pfad, "w")
     for x in pw_liste:
         datei.write(str(x) + "\n")
-    datei.close
+    datei.close()
+
+# Soll die settings.cfg Einstellungsdatei speichern / überschreiben
+def Einstellungen_Datei_Speichern(einstellungen):
+    pfad:str = str("./Passwortmanager/settings.cfg") # Erstmal Standard Dateiname.
+    datei = open(pfad, "w")
+    for key, value in einstellungen.items():
+        print(key, value)
+
+    datei.close()
+
 
 # Testet das Erstellen und füllen der Passwort Liste
 def Teste_Liste_erstellen():
@@ -182,7 +194,7 @@ def finde_naechsten_index():
     return next_index
 
 
-def neuen_Datensatz_anlegen(pw_liste):
+def neuen_Datensatz_anlegen(pw_liste, datenbank_datei_name):
     index:int = finde_naechsten_index()
     name:str = str(input("Geben Sie Ihren Accountnamen für den neuen Datensatz ein.\n"))
     passwort:str = str(input("Geben Sie Ihr Passwort für den neuen Datensatz ein.\n"))
@@ -192,10 +204,10 @@ def neuen_Datensatz_anlegen(pw_liste):
         hinweis = "/"
     ein_Passwort = Passwort(index, name, passwort, url, hinweis)
     pw_liste.append(ein_Passwort)
-    Datei_Schreiben(pw_liste)
+    Passwort_Datei_Schreiben(pw_liste, datenbank_datei_name)
     Datei_Lesen(pw_liste)
 
-def auswahl_Menue(pw_liste):
+def auswahl_Menue(pw_liste, datenbank_datei_name):
     print("\n1) Zeige existierende Passwörter")
     print("2) Füge ein neues Passwort hinzu")
     print("3) Lösche ein Passwort")
@@ -212,20 +224,20 @@ def auswahl_Menue(pw_liste):
             Ausgabe_Pw_Liste(pw_liste)
         # Neuen Datensatz anlegen
         case 2:
-            neuen_Datensatz_anlegen(pw_liste)
+            neuen_Datensatz_anlegen(pw_liste, datenbank_datei_name)
         # Lösche einen Datensatz
         case 3:
-            datensatz_loeschen(pw_liste, int(input("\nBitte geben Sie den Index des zu löschenden Passwortes ein.\n")))
+            datensatz_loeschen(pw_liste, int(input("\nBitte geben Sie den Index des zu löschenden Passwortes ein.\n")), datenbank_datei_name)
         # Ändere einen Datensatz
         case 4:
-            datensatz_aendern(pw_liste, int(input("\nBitte geben Sie den Index des zu ändernden Passwortes ein.\n")))
+            datensatz_aendern(pw_liste, int(input("\nBitte geben Sie den Index des zu ändernden Passwortes ein.\n")), datenbank_datei_name)
         # Beenden
         case 5:
             sys.exit()
         
-        
-# TODO: Hier noch Startnachricht mit Auswahl implementieren!
 def startbildschirm():
+    settings_datei = "./Passwortmanager/settings.cfg"
+    einstellungen = einstellungen_laden() # Dictionary initialisieren
     print("=====================")
     print("   Passwortmanager")
     print("=====================")
@@ -236,7 +248,7 @@ def startbildschirm():
     match auswahl:
         case 1:
             print("Neue Datenbank wird angelegt.\nFalls vorhanden, wird die alte Datenbank gelöscht.")
-            ersteinrichtung(pw_liste)
+            ersteinrichtung(pw_liste, einstellungen)
         case 2:
             print("Vorhandene Datenbank wird genutzt.")
             einrichtung_pruefen()
@@ -244,20 +256,17 @@ def startbildschirm():
             print("Programm wird beendet.")
             sys.exit()
 
-def einstellungen_laden(settings_datei:str):
-    datei = open(settings_datei, 'r')
+def einstellungen_laden():
+    datei = open("./Passwortmanager/settings.cfg", 'r')
     Lines = datei.readlines()
-    einstellungen = {}
+    einstellungen = {"datenbank_datei":"test.txt" } # Hier weitere Keys einfüllen, für mehr Settings wenn nötig
     # Datei mit Einstellungen iterieren um Einstellungs-Variablen zu füllen
     for line in Lines:
         if len(line.strip()) != 0:
-            einstellungen = dict(line.split(":"))
-            for k, v in einstellungen.items():
-                print(k,v)
-            if einstellungen[0] == "datenbank_datei":
-                
-                return settings
-                
+            if line.split(":")[0] == "datenbank_datei":
+                #print(line.split(":"))
+                einstellungen["datenbank_datei"] = line.split(":")[1]
+    return einstellungen                
 
 # Oben Methoden / Funktionen
 # ------------------------------------------------------------------------------------------------------------------------
@@ -265,14 +274,12 @@ def einstellungen_laden(settings_datei:str):
 
 # Liste für Passwörter definieren
 pw_liste = []
-# Einstellungen
-settings_datei = "./Passwortmanager/settings.cfg"
-settings = {}
-settings = einstellungen_laden(settings_datei)
+einstellungen = einstellungen_laden()
+datenbank_datei_name = einstellungen['datenbank_datei']
 # Startbildschirm zeigen
 startbildschirm()
 # Ausgabe der formatierten Daten aus der Passwort Datei.
 Ausgabe_Pw_Liste(pw_liste)
 # Hauptschleife
 while True:
-    auswahl_Menue(pw_liste)
+    auswahl_Menue(pw_liste, datenbank_datei_name)
